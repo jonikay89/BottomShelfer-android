@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="BottomShelferSheet">
+        <attr name="bottomshelfer_cornerRadius" format="dimension" />
+        <attr name="bottomshelfer_maxSheetWidth" format="dimension" />
+        <attr name="bottomshelfer_maxHeightFraction" format="float" />
+        <attr name="bottomshelfer_grabberHitAreaHeight" format="dimension" />
+        <attr name="bottomshelfer_grabberPillWidth" format="dimension" />
+        <attr name="bottomshelfer_grabberPillHeight" format="dimension" />
+        <attr name="bottomshelfer_grabberPillBottomOffset" format="dimension" />
+        <attr name="bottomshelfer_grabberPillCornerRadius" format="dimension" />
+        <attr name="bottomshelfer_isDimmingEnabled" format="boolean" />
+        <attr name="bottomshelfer_isDraggingEnabled" format="boolean" />
+        <attr name="bottomshelfer_dimingColor" format="color" />
+    </declare-styleable>
+</resources>
