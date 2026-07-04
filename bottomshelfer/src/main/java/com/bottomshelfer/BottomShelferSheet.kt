@@ -166,13 +166,21 @@ class BottomShelferSheet @JvmOverloads constructor(
         val sheetWidth = minOf(widthSize, maxWidthPx)
 
         val parentView = parent as? View
-        val parentH = maxOf(parentView?.height ?: 0, heightSize)
+        val parentH = (parentView?.height ?: heightSize)
         containerHeight = if (parentH > 0) parentH else resources.displayMetrics.heightPixels
         maxSheetHeight = (containerHeight * config.maxHeightFraction).toInt()
 
         val widthSpec = MeasureSpec.makeMeasureSpec(sheetWidth, MeasureSpec.EXACTLY)
         val heightSpec = MeasureSpec.makeMeasureSpec(maxSheetHeight, MeasureSpec.EXACTLY)
-        measureChildren(widthSpec, heightSpec)
+        val grabberAreaH = dpToPx(config.grabberHitAreaHeightDp.toFloat()).toInt()
+        val visibleContentH = ((maxSheetHeight - translationY - grabberAreaH).coerceAtLeast(0f)).toInt()
+        val contentHeightSpec = MeasureSpec.makeMeasureSpec(visibleContentH, MeasureSpec.EXACTLY)
+
+        for (i in 0 until childCount) {
+            val child = getChildAt(i)
+            val spec = if (child === contentLayout) contentHeightSpec else heightSpec
+            child.measure(widthSpec, spec)
+        }
         setMeasuredDimension(sheetWidth, maxSheetHeight)
     }
 
@@ -189,7 +197,8 @@ class BottomShelferSheet @JvmOverloads constructor(
             pill.layout(pillX, maxOf(pillY, 0), pillX + pillW, pillY + pillH)
         }
 
-        contentLayout.layout(0, grabberAreaH, right - left, bottom - top)
+        val visibleContentH = ((maxSheetHeight - translationY - grabberAreaH).coerceAtLeast(0f)).toInt()
+        contentLayout.layout(0, grabberAreaH, right - left, grabberAreaH + visibleContentH)
     }
 
     fun setDetents(detents: List<BottomShelferDetent>) {
@@ -584,6 +593,7 @@ class BottomShelferSheet @JvmOverloads constructor(
         val idx = minOf(selectedDetentIndex, maxOf(detents.size - 1, 0))
         val h = if (detents.isEmpty()) (containerHeight * config.maxHeightFraction).toInt() else detents[idx].height
         callback?.onDetentChanged(idx, h)
+        requestLayout()
     }
 
     private fun animateGrabberPill(active: Boolean) {
@@ -639,3 +649,4 @@ class BottomShelferSheet @JvmOverloads constructor(
         return px / resources.displayMetrics.density
     }
 }
+
