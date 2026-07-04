@@ -14,6 +14,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.animation.DecelerateInterpolator
 import android.widget.FrameLayout
+import androidx.core.view.NestedScrollingParent3
 import androidx.core.view.ViewCompat
 import androidx.dynamicanimation.animation.SpringAnimation
 import androidx.dynamicanimation.animation.SpringForce
@@ -25,7 +26,7 @@ class BottomShelferSheet @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0
-) : FrameLayout(context, attrs, defStyleAttr) {
+) : FrameLayout(context, attrs, defStyleAttr), NestedScrollingParent3 {
 
     var config: BottomShelferLayoutConfig = BottomShelferLayoutConfig.DEFAULT
         set(value) {
@@ -64,7 +65,9 @@ class BottomShelferSheet @JvmOverloads constructor(
     private var containerHeight = 0
     private var velocityTracker: VelocityTracker? = null
     private var trackedScrollView: View? = null
-    private var scrollViewRejecting = false
+    private var nestedScrollActive = false
+    private var nestedScrollTranslationY = 0f
+    private var touchActive = false
 
     private var _isVisible = false
     val isVisible: Boolean get() = _isVisible
@@ -151,7 +154,7 @@ class BottomShelferSheet @JvmOverloads constructor(
             translationY = maxSheetHeight.toFloat()
             visibility = View.VISIBLE
             snapToCurrentDetent(animate = true)
-        } else if (!isUserDragging) {
+        } else if (!isUserDragging && !touchActive) {
             snapToCurrentDetent(animate = false)
         }
     }
@@ -254,6 +257,90 @@ class BottomShelferSheet @JvmOverloads constructor(
         contentLayout.addView(view, params)
     }
 
+    override fun onStartNestedScroll(child: View, target: View, axes: Int, type: Int): Boolean {
+        return axes and ViewCompat.SCROLL_AXIS_VERTICAL != 0
+    }
+
+    override fun onStartNestedScroll(child: View, target: View, axes: Int): Boolean {
+        return onStartNestedScroll(child, target, axes, ViewCompat.TYPE_TOUCH)
+    }
+
+    override fun onNestedScrollAccepted(child: View, target: View, axes: Int, type: Int) {
+        nestedScrollActive = true
+        touchActive = true
+        nestedScrollTranslationY = translationY
+    }
+
+    override fun onNestedScrollAccepted(child: View, target: View, axes: Int) {
+        onNestedScrollAccepted(child, target, axes, ViewCompat.TYPE_TOUCH)
+    }
+
+    override fun onStopNestedScroll(target: View, type: Int) {
+        nestedScrollActive = false
+        touchActive = false
+        isUserDragging = false
+    }
+
+    override fun onStopNestedScroll(target: View) {
+        onStopNestedScroll(target, ViewCompat.TYPE_TOUCH)
+    }
+
+    override fun onNestedScroll(
+        target: View, dxConsumed: Int, dyConsumed: Int,
+        dxUnconsumed: Int, dyUnconsumed: Int, type: Int, consumed: IntArray
+    ) {
+        if (dyUnconsumed != 0) {
+            consumed[1] = dyUnconsumed
+        }
+    }
+
+    override fun onNestedScroll(
+        target: View, dxConsumed: Int, dyConsumed: Int,
+        dxUnconsumed: Int, dyUnconsumed: Int, type: Int
+    ) {
+        onNestedScroll(target, dxConsumed, dyConsumed, dxUnconsumed, dyUnconsumed, type, IntArray(2))
+    }
+
+    override fun onNestedScroll(
+        target: View, dxConsumed: Int, dyConsumed: Int,
+        dxUnconsumed: Int, dyUnconsumed: Int
+    ) {
+        onNestedScroll(target, dxConsumed, dyConsumed, dxUnconsumed, dyUnconsumed, ViewCompat.TYPE_TOUCH)
+    }
+
+    override fun onNestedPreScroll(target: View, dx: Int, dy: Int, consumed: IntArray, type: Int) {
+    }
+
+    override fun onNestedPreScroll(target: View, dx: Int, dy: Int, consumed: IntArray) {
+    }
+
+    override fun onNestedFling(
+        target: View, velocityX: Float, velocityY: Float, consumed: Boolean
+    ): Boolean = false
+
+    override fun onNestedPreFling(target: View, velocityX: Float, velocityY: Float): Boolean = false
+
+    override fun getNestedScrollAxes(): Int {
+        return if (nestedScrollActive) ViewCompat.SCROLL_AXIS_VERTICAL else ViewCompat.SCROLL_AXIS_NONE
+    }
+
+    private fun snapToNearestDetent() {
+        if (snapYPositions.isEmpty()) return
+        val currentOffset = translationY
+        var bestIndex = 0
+        var bestDist = Float.MAX_VALUE
+        for (i in snapYPositions.indices) {
+            val dist = abs(currentOffset - snapYPositions[i])
+            if (dist < bestDist) {
+                bestDist = dist
+                bestIndex = i
+            }
+        }
+        selectedDetentIndex = bestIndex
+        val target = snapYPositions[bestIndex]
+        animateToTranslationY(target)
+    }
+
     override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {
         if (!config.isDraggingEnabled) return false
         if (!_isVisible) return false
@@ -261,27 +348,24 @@ class BottomShelferSheet @JvmOverloads constructor(
         when (ev.actionMasked) {
             MotionEvent.ACTION_DOWN -> {
                 touchDownY = ev.rawY
+                dragStartTranslationY = translationY
+                isUserDragging = true
+                touchActive = true
                 val localY = ev.y
                 val grabberAreaH = dpToPx(config.grabberHitAreaHeightDp.toFloat())
                 if (localY < grabberAreaH) {
                     return true
                 }
-                scrollViewRejecting = false
                 trackedScrollView = findScrollViewAt(ev.rawX, ev.rawY)
-            }
-            MotionEvent.ACTION_MOVE -> {
-                if (scrollViewRejecting) return false
                 if (trackedScrollView != null) {
-                    val dy = touchDownY - ev.rawY
-                    if (dy < 0 && isScrolledToTop(trackedScrollView!!)) {
-                        trackedScrollView?.let { stopScroll(it) }
-                        return true
-                    }
-                    if (dy > 0 && isScrolledToTop(trackedScrollView!!)) {
-                        return false
-                    }
                     return false
                 }
+            }
+            MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                touchActive = false
+            }
+            MotionEvent.ACTION_MOVE -> {
+                if (trackedScrollView != null) return false
                 val dy = touchDownY - ev.rawY
                 if (abs(dy) > 10f) {
                     return true
@@ -306,7 +390,6 @@ class BottomShelferSheet @JvmOverloads constructor(
                 touchDownY = event.rawY
                 dragStartTranslationY = translationY
                 isUserDragging = true
-                scrollViewRejecting = false
                 val localY = event.y
                 val grabberAreaH = dpToPx(config.grabberHitAreaHeightDp.toFloat())
                 if (localY < grabberAreaH) {
@@ -540,23 +623,6 @@ class BottomShelferSheet @JvmOverloads constructor(
         return name.contains("ScrollView") || name.contains("RecyclerView") ||
                 name.contains("ListView") || name.contains("GridView") ||
                 view.canScrollVertically(-1)
-    }
-
-    private fun isScrolledToTop(view: View): Boolean {
-        return !view.canScrollVertically(-1)
-    }
-
-    private fun stopScroll(view: View) {
-        try {
-            val method = view.javaClass.getMethod("stopScroll")
-            method.invoke(view)
-        } catch (_: Exception) { }
-        view.cancelPendingInputEvents()
-        if (view is ViewGroup) {
-            for (i in 0 until view.childCount) {
-                stopScroll(view.getChildAt(i))
-            }
-        }
     }
 
     fun setKeyboardOffset(offset: Int) {
