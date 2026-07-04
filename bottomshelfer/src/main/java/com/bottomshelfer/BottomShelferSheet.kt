@@ -122,7 +122,7 @@ class BottomShelferSheet @JvmOverloads constructor(
             val pillW = dpToPx(config.grabberPillWidthDp.toFloat())
             val pillH = dpToPx(config.grabberPillHeightDp.toFloat())
             val pillR = dpToPx(config.grabberPillCornerRadiusDp)
-            grabberPill = GrabberView(context, pillW, pillH, pillR)
+            grabberPill = GrabberView(context, pillW, pillH, pillR, config.grabberPillColor)
             grabberPill?.let { addView(it) }
         }
 
@@ -353,7 +353,6 @@ class BottomShelferSheet @JvmOverloads constructor(
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
-        grabberPill?.updatePillColor()
         rebuildSnapPoints()
         if (!isUserDragging) {
             snapToCurrentDetent(animate = false)

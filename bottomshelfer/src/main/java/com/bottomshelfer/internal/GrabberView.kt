@@ -13,23 +13,16 @@ internal class GrabberView(
     context: Context,
     private val pillWidth: Float,
     private val pillHeight: Float,
-    private val pillR: Float
+    private val pillR: Float,
+    private val pillColor: Int
 ) : View(context) {
 
     private val pillPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.FILL
+        color = pillColor
     }
 
     private val rect = RectF()
-
-    init {
-        updatePillColor()
-    }
-
-    fun updatePillColor() {
-        pillPaint.color = 0x99000000.toInt()
-        invalidate()
-    }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         setMeasuredDimension(

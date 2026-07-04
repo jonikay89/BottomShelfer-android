@@ -6,6 +6,7 @@ data class BottomShelferLayoutConfig(
     val grabberHitAreaHeightDp: Int = 44,
     val grabberPillWidthDp: Int = 60,
     val grabberPillHeightDp: Int = 8,
+    val grabberPillColor: Int = 0x99000000.toInt(),
     val grabberPillBottomOffsetDp: Int = 12,
     val grabberPillCornerRadiusDp: Float = 2.5f,
     val cornerRadiusDp: Float = 28f,
