@@ -100,8 +100,8 @@ object Demos {
 
     private fun presentDefaultSheet(activity: MainActivity) {
         val sheet = BottomShelferSheet(activity)
-        sheet.setDetents(listOf(BottomShelferDetent.medium(activity)))
-        sheet.setSelectedDetentIndex(0)
+        sheet.setDetents(listOf(BottomShelferDetent.small(activity), BottomShelferDetent.medium(activity)))
+        sheet.setSelectedDetentIndex(1)
 
         val content = makeLabelButtonLayout(
             activity, "Tap the scrim or the button to dismiss.\nTry dragging the grabber too."
@@ -115,18 +115,20 @@ object Demos {
 
     private fun presentFiltersSheet(activity: MainActivity) {
         val sheet = BottomShelferSheet(activity)
-        sheet.setDetents(BottomShelferDetent.detentsForContentHeight(420, activity))
+        sheet.setDetents(listOf(
+            BottomShelferDetent.small(activity),
+            BottomShelferDetent.medium(activity),
+            BottomShelferDetent.large(activity)
+        ))
         sheet.setSelectedDetentIndex(1)
 
         val content = makeVerticalLayout(activity).apply {
             addView(makeLabel(activity, "Drag the grabber, or use the buttons below."))
-            addView(makeButton(activity, "Snap to small") {
-                val h = BottomShelferDetent.detentsForContentHeight(420, activity).firstOrNull()?.height ?: 200
-                sheet.snapToHeight(h)
+            addView(makeButton(activity, "Snap to small (25%)") {
+                sheet.snapToHeight(BottomShelferDetent.small(activity).height)
             })
-            addView(makeButton(activity, "Snap to large") {
-                val h = BottomShelferDetent.detentsForContentHeight(420, activity).lastOrNull()?.height ?: 1000
-                sheet.snapToHeight(h)
+            addView(makeButton(activity, "Snap to large (90%)") {
+                sheet.snapToHeight(BottomShelferDetent.large(activity).height)
             })
             addView(makeButton(activity, "Dismiss") {
                 sheet.parentDialog?.dismiss()
@@ -149,8 +151,8 @@ object Demos {
             cornerRadiusDp = 28f,
             dimmingColor = 0x66000000.toInt(),
         )
-        sheet.setDetents(listOf(BottomShelferDetent.large(activity)))
-        sheet.setSelectedDetentIndex(0)
+        sheet.setDetents(listOf(BottomShelferDetent.small(activity), BottomShelferDetent.medium(activity), BottomShelferDetent.large(activity)))
+        sheet.setSelectedDetentIndex(2)
 
         val content = makeLabelButtonLayout(
             activity, "Custom layout: wider, bigger grabber.\n60% max height, 28pt corners."
@@ -164,8 +166,8 @@ object Demos {
 
     private fun presentScrollableSheet(activity: MainActivity) {
         val sheet = BottomShelferSheet(activity)
-        sheet.setDetents(listOf(BottomShelferDetent.medium(activity), BottomShelferDetent.large(activity)))
-        sheet.setSelectedDetentIndex(0)
+        sheet.setDetents(listOf(BottomShelferDetent.small(activity), BottomShelferDetent.medium(activity), BottomShelferDetent.large(activity)))
+        sheet.setSelectedDetentIndex(1)
 
         val content = RecyclerView(activity).apply {
             layoutManager = LinearLayoutManager(activity)
@@ -197,7 +199,7 @@ object Demos {
 
     private fun presentKeyboardSheet(activity: MainActivity) {
         val sheet = BottomShelferSheet(activity)
-        sheet.setDetents(listOf(BottomShelferDetent.custom(200)))
+        sheet.setDetents(listOf(BottomShelferDetent.small(activity), BottomShelferDetent.medium(activity)))
         sheet.setSelectedDetentIndex(0)
 
         val content = makeVerticalLayout(activity).apply {
@@ -222,8 +224,8 @@ object Demos {
     private fun presentTransparentSheet(activity: MainActivity) {
         val sheet = BottomShelferSheet(activity)
         sheet.config = sheet.config.copy(isDimmingEnabled = false)
-        sheet.setDetents(listOf(BottomShelferDetent.medium(activity)))
-        sheet.setSelectedDetentIndex(0)
+        sheet.setDetents(listOf(BottomShelferDetent.small(activity), BottomShelferDetent.medium(activity)))
+        sheet.setSelectedDetentIndex(1)
 
         val content = makeLabelButtonLayout(
             activity, "No dimming scrim behind this sheet.\nTap the button to dismiss."
@@ -238,7 +240,7 @@ object Demos {
     private fun presentFixedSheet(activity: MainActivity) {
         val sheet = BottomShelferSheet(activity)
         sheet.config = sheet.config.copy(isDraggingEnabled = false)
-        sheet.setDetents(listOf(BottomShelferDetent.small(activity)))
+        sheet.setDetents(listOf(BottomShelferDetent.small(activity), BottomShelferDetent.medium(activity)))
         sheet.setSelectedDetentIndex(0)
 
         val content = makeLabelButtonLayout(
@@ -258,8 +260,8 @@ object Demos {
             grabberPillCornerRadiusDp = 3f,
             grabberPillBottomOffsetDp = 16,
         )
-        sheet.setDetents(listOf(BottomShelferDetent.medium(activity)))
-        sheet.setSelectedDetentIndex(0)
+        sheet.setDetents(listOf(BottomShelferDetent.small(activity), BottomShelferDetent.medium(activity)))
+        sheet.setSelectedDetentIndex(1)
 
         val content = makeLabelButtonLayout(
             activity, "Custom grabber: wider, thicker,\nbright pill with rounded ends."
@@ -273,8 +275,8 @@ object Demos {
 
     private fun presentComposeSheet(activity: MainActivity) {
         val sheet = BottomShelferSheet(activity)
-        sheet.setDetents(listOf(BottomShelferDetent.medium(activity), BottomShelferDetent.large(activity)))
-        sheet.setSelectedDetentIndex(0)
+        sheet.setDetents(listOf(BottomShelferDetent.small(activity), BottomShelferDetent.medium(activity), BottomShelferDetent.large(activity)))
+        sheet.setSelectedDetentIndex(1)
 
         val content = makeVerticalLayout(activity).apply {
             addView(makeLabel(activity, "Jetpack Compose inside BottomShelfer").apply {
@@ -310,8 +312,8 @@ object Demos {
             grabberPillHeightDp = 0,
             grabberPillBottomOffsetDp = 0,
         )
-        sheet.setDetents(listOf(BottomShelferDetent.medium(activity)))
-        sheet.setSelectedDetentIndex(0)
+        sheet.setDetents(listOf(BottomShelferDetent.small(activity), BottomShelferDetent.medium(activity)))
+        sheet.setSelectedDetentIndex(1)
 
         val content = makeLabelButtonLayout(
             activity, "Hidden grabber pill.\nDrag still works via the top area!"
@@ -330,8 +332,8 @@ object Demos {
             grabberPillHeightDp = 0,
             grabberPillBottomOffsetDp = 0,
         )
-        sheet.setDetents(listOf(BottomShelferDetent.medium(activity)))
-        sheet.setSelectedDetentIndex(0)
+        sheet.setDetents(listOf(BottomShelferDetent.small(activity), BottomShelferDetent.medium(activity)))
+        sheet.setSelectedDetentIndex(1)
 
         val rainbowGrabber = RainbowGrabberView(activity)
         sheet.callback = object : BottomShelferCallback {
@@ -373,7 +375,7 @@ object Demos {
 
     private fun presentEventsSheet(activity: MainActivity) {
         val sheet = BottomShelferSheet(activity)
-        sheet.setDetents(BottomShelferDetent.detentsForContentHeight(420, activity))
+        sheet.setDetents(listOf(BottomShelferDetent.small(activity), BottomShelferDetent.medium(activity), BottomShelferDetent.large(activity)))
         sheet.setSelectedDetentIndex(1)
 
         val eventLog = TextView(activity).apply {
