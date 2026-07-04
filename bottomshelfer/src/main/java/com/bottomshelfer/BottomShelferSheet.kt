@@ -4,23 +4,21 @@ import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.Configuration
-import android.graphics.Outline
-import android.graphics.Path
-import android.os.Build
+import android.graphics.Color
+import android.graphics.drawable.GradientDrawable
 import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.MotionEvent
 import android.view.VelocityTracker
 import android.view.View
 import android.view.ViewGroup
-import android.view.ViewOutlineProvider
 import android.view.animation.DecelerateInterpolator
 import android.widget.FrameLayout
 import androidx.core.view.ViewCompat
-import kotlin.math.abs
 import androidx.dynamicanimation.animation.SpringAnimation
 import androidx.dynamicanimation.animation.SpringForce
 import com.bottomshelfer.internal.GrabberView
+import kotlin.math.abs
 
 @SuppressLint("ClickableViewAccessibility")
 class BottomShelferSheet @JvmOverloads constructor(
@@ -104,8 +102,10 @@ class BottomShelferSheet @JvmOverloads constructor(
 
         clipChildren = false
         clipToPadding = false
+        visibility = View.GONE
+        setBackgroundColor(Color.TRANSPARENT)
 
-        grabberHitArea.setBackgroundColor(0x00000000)
+        grabberHitArea.setBackgroundColor(Color.TRANSPARENT)
         addView(grabberHitArea)
 
         contentLayout.id = ViewCompat.generateViewId()
@@ -131,28 +131,11 @@ class BottomShelferSheet @JvmOverloads constructor(
 
     private fun applyCornerMask() {
         val radius = dpToPx(config.cornerRadiusDp)
-        clipToOutline = true
-        outlineProvider = object : ViewOutlineProvider() {
-            override fun getOutline(view: View, outline: Outline) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                    val path = Path().apply {
-                        val w = view.width.toFloat()
-                        val h = view.height.toFloat()
-                        val r = radius
-                        moveTo(0f, r)
-                        arcTo(0f, 0f, r * 2, r * 2, 180f, 90f, false)
-                        lineTo(w - r, 0f)
-                        arcTo(w - r * 2, 0f, w, r * 2, 270f, 90f, false)
-                        lineTo(w, h)
-                        lineTo(0f, h)
-                        close()
-                    }
-                    outline.setPath(path)
-                } else {
-                    outline.setRoundRect(0, 0, view.width, view.height + radius.toInt(), radius)
-                }
-            }
+        val drawable = GradientDrawable().apply {
+            setColor(Color.TRANSPARENT)
+            cornerRadii = floatArrayOf(radius, radius, radius, radius, 0f, 0f, 0f, 0f)
         }
+        background = drawable
     }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
@@ -162,7 +145,12 @@ class BottomShelferSheet @JvmOverloads constructor(
         val maxH = (containerHeight * config.maxHeightFraction).toInt()
         maxSheetHeight = maxH
         rebuildSnapPoints()
-        if (!isUserDragging) {
+        if (pendingShow) {
+            pendingShow = false
+            translationY = maxSheetHeight.toFloat()
+            visibility = View.VISIBLE
+            snapToCurrentDetent(animate = true)
+        } else if (!isUserDragging) {
             snapToCurrentDetent(animate = false)
         }
     }
@@ -220,20 +208,26 @@ class BottomShelferSheet @JvmOverloads constructor(
         animateToTranslationY(targetOffset)
     }
 
+    private var pendingShow = false
+
     fun show(animate: Boolean = true) {
         val wasVisible = _isVisible
         _isVisible = true
-        visibility = View.VISIBLE
         rebuildSnapPoints()
         if (!wasVisible && animate) {
             if (maxSheetHeight > 0) {
                 translationY = maxSheetHeight.toFloat()
+                visibility = View.VISIBLE
+                snapToCurrentDetent(animate = true)
             } else {
-                translationY = height.coerceAtLeast(1).toFloat()
+                pendingShow = true
+                visibility = View.INVISIBLE
             }
-            snapToCurrentDetent(animate = true)
         } else if (!animate) {
+            visibility = View.VISIBLE
             snapToCurrentDetent(animate = false)
+        } else {
+            visibility = View.VISIBLE
         }
     }
 
@@ -405,37 +399,37 @@ class BottomShelferSheet @JvmOverloads constructor(
             hide(animate = true)
             return
         }
+
         val currentTranslationY = translationY
-        val startSnapIndex = snapIndexClosest(toTranslationY = dragStartTranslationY)
+        val dismissThresholdPercent = 0.85f
+        val currentProgress = currentTranslationY / maxSheetHeight
+
+        if (currentProgress >= dismissThresholdPercent) {
+            parentDialog?.dismissImmediately()
+            return
+        }
+
+        val currentSnapIndex = snapIndexClosest(toTranslationY = currentTranslationY)
         val isDraggingDown = velocityY > 0
-        val isFastSwipe = abs(velocityY) > 1500
+        val velocityInPercent = abs(velocityY) / maxSheetHeight
+        val isFastSwipe = velocityInPercent > 1.5f
 
         if (isFastSwipe) {
             if (isDraggingDown) {
-                val nextIndex = startSnapIndex - 1
+                val nextIndex = currentSnapIndex - 1
                 if (nextIndex < 0) {
-                    hide(animate = true)
+                    parentDialog?.dismissImmediately()
                     return
                 }
                 snapToIndex(nextIndex, velocityY)
             } else {
-                val prevIndex = minOf(startSnapIndex + 1, snapYPositions.lastIndex)
+                val prevIndex = minOf(currentSnapIndex + 1, snapYPositions.lastIndex)
                 snapToIndex(prevIndex, velocityY)
             }
             return
         }
 
-        val closestIndex = snapIndexClosest(toTranslationY = currentTranslationY)
-        val smallestSnapY = snapYPositions.first()
-        val gapToBottom = maxSheetHeight - smallestSnapY
-        val dismissThreshold = smallestSnapY + gapToBottom * 0.4f
-
-        if (currentTranslationY > dismissThreshold) {
-            hide(animate = true)
-            return
-        }
-
-        snapToIndex(closestIndex, velocityY)
+        snapToIndex(currentSnapIndex, velocityY)
     }
 
     private fun snapToIndex(index: Int, velocity: Float = 0f) {

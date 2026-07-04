@@ -8,7 +8,7 @@ data class BottomShelferLayoutConfig(
     val grabberPillHeightDp: Int = 5,
     val grabberPillBottomOffsetDp: Int = 12,
     val grabberPillCornerRadiusDp: Float = 2.5f,
-    val cornerRadiusDp: Float = 20f,
+    val cornerRadiusDp: Float = 28f,
     val isDimmingEnabled: Boolean = true,
     val isDraggingEnabled: Boolean = true,
     val allowGrabbingNonScrollViews: Boolean = false,

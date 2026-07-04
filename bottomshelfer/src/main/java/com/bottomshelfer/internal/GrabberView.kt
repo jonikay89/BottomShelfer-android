@@ -25,7 +25,7 @@ internal class GrabberView(
     fun updatePillColor() {
         val dark = (context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) ==
                 Configuration.UI_MODE_NIGHT_YES
-        pillPaint.color = if (dark) 0x4DFFFFFF.toInt() else 0x26000000
+        pillPaint.color = if (dark) 0x99FFFFFF.toInt() else 0x99000000.toInt()
     }
 
     fun updateSize(width: Float, height: Float, radius: Float) {

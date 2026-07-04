@@ -1,7 +1,7 @@
 package com.bottomshelfer
 
-import android.app.Dialog
 import android.content.Context
+import android.content.ContextWrapper
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
@@ -10,11 +10,18 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.FrameLayout
+import androidx.activity.ComponentDialog
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.ViewModelStoreOwner
+import androidx.lifecycle.setViewTreeLifecycleOwner
+import androidx.lifecycle.setViewTreeViewModelStoreOwner
+import androidx.savedstate.SavedStateRegistryOwner
+import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 
 class BottomShelferDialog(
     context: Context,
     private val sheet: BottomShelferSheet
-) : Dialog(context, android.R.style.Theme_Translucent_NoTitleBar) {
+) : ComponentDialog(context, R.style.Theme_BottomShelfer_Transparent) {
 
     var dismissOnHide: Boolean = false
 
@@ -23,7 +30,7 @@ class BottomShelferDialog(
 
     init {
         dimmingView.setBackgroundColor(sheet.config.dimmingColor)
-        dimmingView.alpha = 0f
+        dimmingView.alpha = 1f
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -33,13 +40,14 @@ class BottomShelferDialog(
         window?.apply {
             setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
             setGravity(Gravity.CENTER)
-            setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-            addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
+            setBackgroundDrawableResource(android.R.color.transparent)
             @Suppress("DEPRECATION")
             setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
+            setFormat(android.graphics.PixelFormat.TRANSLUCENT)
         }
 
         val container = FrameLayout(context)
+        container.setBackgroundColor(Color.TRANSPARENT)
         container.clipChildren = false
         container.clipToPadding = false
         container.addView(dimmingView, FrameLayout.LayoutParams(
@@ -62,16 +70,27 @@ class BottomShelferDialog(
             dimmingView.alpha = 0f
         }
 
-        setContentView(container)
+        // Try to find host owners from the context (e.g. Activity)
+        val hostLifecycle = findOwner<LifecycleOwner>()
+        val hostViewModelStore = findOwner<ViewModelStoreOwner>()
+        val hostSavedState = findOwner<SavedStateRegistryOwner>()
 
-        window?.decorView?.let { decor ->
-            val id = context.resources.getIdentifier(
-                "view_tree_lifecycle_owner", "id", "androidx.lifecycle"
-            )
-            if (id != 0) {
-                decor.setTag(id, context)
-            }
+        // Set ViewTree owners on the container. We fall back to 'this' (ComponentDialog)
+        // to ensure children can always find a valid owner.
+        container.setViewTreeLifecycleOwner(hostLifecycle ?: this as LifecycleOwner)
+        container.setViewTreeViewModelStoreOwner(hostViewModelStore ?: this as ViewModelStoreOwner)
+        container.setViewTreeSavedStateRegistryOwner(hostSavedState ?: this as SavedStateRegistryOwner)
+
+        setContentView(container)
+    }
+
+    private inline fun <reified T> findOwner(): T? {
+        var curContext = context
+        while (curContext is ContextWrapper) {
+            if (curContext is T) return curContext
+            curContext = curContext.baseContext
         }
+        return null
     }
 
     override fun show() {
@@ -90,7 +109,12 @@ class BottomShelferDialog(
     }
 
     fun dismissImmediately() {
-        super.dismiss()
+        sheet.hide(animate = false)
+        dimmingView.alpha = 0f
+        try {
+            super.dismiss()
+        } catch (_: Exception) {
+        }
     }
 
     private fun handleDimmingTap() {
