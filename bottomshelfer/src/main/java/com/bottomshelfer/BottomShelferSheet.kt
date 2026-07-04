@@ -173,8 +173,8 @@ class BottomShelferSheet @JvmOverloads constructor(
         val widthSpec = MeasureSpec.makeMeasureSpec(sheetWidth, MeasureSpec.EXACTLY)
         val heightSpec = MeasureSpec.makeMeasureSpec(maxSheetHeight, MeasureSpec.EXACTLY)
         val grabberAreaH = dpToPx(config.grabberHitAreaHeightDp.toFloat()).toInt()
-        val visibleContentH = ((maxSheetHeight - translationY - grabberAreaH).coerceAtLeast(0f)).toInt()
-        val contentHeightSpec = MeasureSpec.makeMeasureSpec(visibleContentH, MeasureSpec.EXACTLY)
+        val visibleSheetH = ((maxSheetHeight - translationY).coerceAtLeast(0f)).toInt()
+        val contentHeightSpec = MeasureSpec.makeMeasureSpec(visibleSheetH, MeasureSpec.EXACTLY)
 
         for (i in 0 until childCount) {
             val child = getChildAt(i)
@@ -197,8 +197,8 @@ class BottomShelferSheet @JvmOverloads constructor(
             pill.layout(pillX, maxOf(pillY, 0), pillX + pillW, pillY + pillH)
         }
 
-        val visibleContentH = ((maxSheetHeight - translationY - grabberAreaH).coerceAtLeast(0f)).toInt()
-        contentLayout.layout(0, grabberAreaH, right - left, grabberAreaH + visibleContentH)
+        val visibleSheetH = ((maxSheetHeight - translationY).coerceAtLeast(0f)).toInt()
+        contentLayout.layout(0, 0, right - left, visibleSheetH)
     }
 
     fun setDetents(detents: List<BottomShelferDetent>) {
