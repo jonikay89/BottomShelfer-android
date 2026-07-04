@@ -30,7 +30,7 @@ class BottomShelferDialog(
 
     init {
         dimmingView.setBackgroundColor(sheet.config.dimmingColor)
-        dimmingView.alpha = 1f
+        dimmingView.alpha = 0f
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

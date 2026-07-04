@@ -5,7 +5,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.Configuration
 import android.graphics.Color
-import android.graphics.drawable.GradientDrawable
+import android.graphics.Outline
 import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.MotionEvent
@@ -103,7 +103,7 @@ class BottomShelferSheet @JvmOverloads constructor(
         clipChildren = false
         clipToPadding = false
         visibility = View.GONE
-        setBackgroundColor(Color.TRANSPARENT)
+        setBackgroundColor(Color.WHITE)
 
         grabberHitArea.setBackgroundColor(Color.TRANSPARENT)
         addView(grabberHitArea)
@@ -131,11 +131,12 @@ class BottomShelferSheet @JvmOverloads constructor(
 
     private fun applyCornerMask() {
         val radius = dpToPx(config.cornerRadiusDp)
-        val drawable = GradientDrawable().apply {
-            setColor(Color.TRANSPARENT)
-            cornerRadii = floatArrayOf(radius, radius, radius, radius, 0f, 0f, 0f, 0f)
+        clipToOutline = true
+        outlineProvider = object : android.view.ViewOutlineProvider() {
+            override fun getOutline(view: View, outline: Outline) {
+                outline.setRoundRect(0, 0, view.width, view.height + radius.toInt(), radius)
+            }
         }
-        background = drawable
     }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
@@ -402,7 +403,7 @@ class BottomShelferSheet @JvmOverloads constructor(
 
         val currentTranslationY = translationY
         val dismissThresholdPercent = 0.85f
-        val currentProgress = currentTranslationY / maxSheetHeight
+        val currentProgress = if (maxSheetHeight > 0) currentTranslationY / maxSheetHeight else 0f
 
         if (currentProgress >= dismissThresholdPercent) {
             parentDialog?.dismissImmediately()
@@ -411,7 +412,7 @@ class BottomShelferSheet @JvmOverloads constructor(
 
         val currentSnapIndex = snapIndexClosest(toTranslationY = currentTranslationY)
         val isDraggingDown = velocityY > 0
-        val velocityInPercent = abs(velocityY) / maxSheetHeight
+        val velocityInPercent = if (maxSheetHeight > 0) abs(velocityY) / maxSheetHeight else 0f
         val isFastSwipe = velocityInPercent > 1.5f
 
         if (isFastSwipe) {

@@ -180,6 +180,7 @@ object Demos {
                         )
                         setPadding(48, 24, 48, 24)
                         textSize = 16f
+                        setTextColor(Color.BLACK)
                     }
                     return object : RecyclerView.ViewHolder(tv) {}
                 }
@@ -282,6 +283,7 @@ object Demos {
             addView(makeLabel(activity, "Jetpack Compose inside BottomShelfer").apply {
                 textSize = 18f
                 setTypeface(null, android.graphics.Typeface.BOLD)
+                setTextColor(Color.BLACK)
             })
 
             val composeView = ComposeView(activity).apply {
@@ -412,6 +414,7 @@ object Demos {
             addView(makeLabel(activity, "Drag & dismiss events").apply {
                 textSize = 18f
                 setTypeface(null, android.graphics.Typeface.BOLD)
+                setTextColor(Color.BLACK)
             })
             addView(eventLog, LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
@@ -438,6 +441,7 @@ object Demos {
             this.text = text
             textSize = 16f
             gravity = Gravity.CENTER
+            setTextColor(Color.BLACK)
         }
     }
 
