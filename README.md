@@ -1,5 +1,9 @@
 # BottomShelfer for Android
 
+<p align="center">
+  <img src="BottomShelferIcon.svg" width="120" alt="BottomShelfer logo" />
+</p>
+
 A customizable slide-up bottom sheet for Android. Supports arbitrary height
 detents, a draggable grabber, optional dimming scrim, keyboard avoidance,
 rotation, scroll view coordination, and full layout configuration.
