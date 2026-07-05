@@ -60,7 +60,7 @@ data class Demo(
 object Demos {
 
     fun create(activity: MainActivity): List<Demo> = listOf(
-        Demo("Default sheet", "Single large detent, package-default layout") {
+        Demo("Default sheet", "Single medium detent, package-default layout") {
             presentDefaultSheet(activity)
         },
         Demo("Multi-detent sheet", "Small / medium / large snap points + buttons") {
@@ -387,7 +387,8 @@ object Demos {
         val eventLog = TextView(activity).apply {
             text = "Drag the grabber or tap the scrim..."
             setPadding(16, 16, 16, 16)
-            setBackgroundColor(0x1A000000)
+            setBackgroundColor(Color.WHITE)
+            setTextColor(Color.BLACK)
             textSize = 14f
             typeface = android.graphics.Typeface.MONOSPACE
             minHeight = 100
