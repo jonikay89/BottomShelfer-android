@@ -151,7 +151,7 @@ object Demos {
             cornerRadiusDp = 28f,
             dimmingColor = 0x66000000.toInt(),
         )
-        sheet.setDetents(listOf(BottomShelferDetent.small(activity), BottomShelferDetent.medium(activity), BottomShelferDetent.large(activity)))
+        sheet.setDetents(BottomShelferDetent.detentsForContentHeight(1000, activity, 0.6f))
         sheet.setSelectedDetentIndex(2)
 
         val content = makeLabelButtonLayout(
