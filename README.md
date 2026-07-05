@@ -4,6 +4,13 @@ A customizable slide-up bottom sheet for Android. Supports arbitrary height
 detents, a draggable grabber, optional dimming scrim, keyboard avoidance,
 rotation, scroll view coordination, and full layout configuration.
 
+<p align="center">
+  <a href="https://github.com/jonikay89/BottomShelfer-Android"><img src="https://img.shields.io/badge/github-jonikay89%2FBottomShelfer--Android-blue" /></a>
+  <a href="https://kotlinlang.org"><img src="https://img.shields.io/badge/kotlin-1.9%2B-purple" /></a>
+  <a href="https://developer.android.com"><img src="https://img.shields.io/badge/Android-API%2021%2B-lightgrey" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" /></a>
+</p>
+
 ## Requirements
 
 - Android 5.0+ (API 21+)
@@ -189,3 +196,7 @@ MIT — see [LICENSE](LICENSE).
 ## Author
 
 **jonikay89** — [@jonikay89](https://github.com/jonikay89)
+
+---
+
+[github]: https://github.com/jonikay89/BottomShelfer-Android
