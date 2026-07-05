@@ -4,5 +4,6 @@
     android:id="@+id/recyclerView"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#E8E8E8"
     android:clipToPadding="false"
-    android:padding="8dp" />
+    android:padding="16dp" />
