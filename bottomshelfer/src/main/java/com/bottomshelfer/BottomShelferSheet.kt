@@ -564,6 +564,9 @@ class BottomShelferSheet @JvmOverloads constructor(
         if (abs(velocity) > 0) {
             spring.setStartVelocity(velocity)
         }
+        spring.addUpdateListener { _, _, _ ->
+            requestLayout()
+        }
         spring.addEndListener { _, _, _, _ ->
             finalizeSnap(targetHeight.toInt())
         }
@@ -583,7 +586,10 @@ class BottomShelferSheet @JvmOverloads constructor(
             val anim = ValueAnimator.ofFloat(translationY, targetTranslationY)
             anim.duration = 400
             anim.interpolator = DecelerateInterpolator()
-            anim.addUpdateListener { translationY = it.animatedValue as Float }
+            anim.addUpdateListener {
+                translationY = it.animatedValue as Float
+                requestLayout()
+            }
             anim.addListener(object : android.animation.Animator.AnimatorListener {
                 override fun onAnimationStart(a: android.animation.Animator) {}
                 override fun onAnimationEnd(a: android.animation.Animator) {
@@ -603,7 +609,10 @@ class BottomShelferSheet @JvmOverloads constructor(
         val anim = ValueAnimator.ofFloat(translationY, target)
         anim.duration = 300
         anim.interpolator = DecelerateInterpolator()
-        anim.addUpdateListener { translationY = it.animatedValue as Float }
+        anim.addUpdateListener {
+            translationY = it.animatedValue as Float
+            requestLayout()
+        }
         anim.addListener(object : android.animation.Animator.AnimatorListener {
             override fun onAnimationStart(a: android.animation.Animator) {}
             override fun onAnimationEnd(a: android.animation.Animator) {
