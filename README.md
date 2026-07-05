@@ -15,6 +15,8 @@ rotation, scroll view coordination, and full layout configuration.
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" /></a>
 </p>
 
+![](BottomShelfer-SampleApp.gif)
+
 ## Requirements
 
 - Android 5.0+ (API 21+)
