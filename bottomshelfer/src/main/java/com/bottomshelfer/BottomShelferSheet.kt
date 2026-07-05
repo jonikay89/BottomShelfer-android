@@ -172,6 +172,7 @@ class BottomShelferSheet @JvmOverloads constructor(
         val heightFromParent = if (heightSize > 0) heightSize else (parentView?.height ?: 0)
         containerHeight = if (heightFromParent > 0) heightFromParent else resources.displayMetrics.heightPixels
         maxSheetHeight = (containerHeight * config.maxHeightFraction).toInt()
+        translationY = translationY.coerceIn(-keyboardOffsetY.toFloat(), maxSheetHeight.toFloat())
 
         val widthSpec = MeasureSpec.makeMeasureSpec(sheetWidth, MeasureSpec.EXACTLY)
         val heightSpec = MeasureSpec.makeMeasureSpec(maxSheetHeight, MeasureSpec.EXACTLY)
@@ -473,9 +474,7 @@ class BottomShelferSheet @JvmOverloads constructor(
         maxSheetHeight = (containerHeight * config.maxHeightFraction).toInt()
         translationY = translationY.coerceIn(-keyboardOffsetY.toFloat(), maxSheetHeight.toFloat())
         rebuildSnapPoints()
-        if (!isUserDragging && _isVisible) {
-            snapToCurrentDetent(animate = false)
-        }
+        snapToCurrentDetent(animate = false)
     }
 
     private fun rebuildSnapPoints() {
