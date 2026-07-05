@@ -45,10 +45,6 @@ class BottomShelferSheet @JvmOverloads constructor(
         get() = config.isDraggingEnabled
         set(value) { config = config.copy(isDraggingEnabled = value) }
 
-    var allowGrabbingNonScrollViews: Boolean
-        get() = config.allowGrabbingNonScrollViews
-        set(value) { config = config.copy(allowGrabbingNonScrollViews = value) }
-
     var callback: BottomShelferCallback? = null
     var parentDialog: BottomShelferDialog? = null
 

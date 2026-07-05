@@ -12,7 +12,6 @@ data class BottomShelferLayoutConfig(
     val cornerRadiusDp: Float = 28f,
     val isDimmingEnabled: Boolean = true,
     val isDraggingEnabled: Boolean = true,
-    val allowGrabbingNonScrollViews: Boolean = false,
     val dimmingColor: Int = 0x4D000000.toInt()
 ) {
     companion object {

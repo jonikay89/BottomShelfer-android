@@ -137,11 +137,7 @@ dialog.show()
 
 The sheet coordinates with embedded scroll views (RecyclerView, ScrollView,
 NestedScrollView). When the scroll view is pinned to the top, a downward drag
-transfers control to the sheet:
-
-```kotlin
-sheet.config = sheet.config.copy(allowGrabbingNonScrollViews = true)
-```
+transfers control to the sheet.
 
 Disable dragging entirely with `isDraggingEnabled = false`.
 
@@ -199,7 +195,6 @@ Override defaults through `BottomShelferLayoutConfig`:
 | `cornerRadiusDp` | 28 | Sheet top corner radius |
 | `isDimmingEnabled` | `true` | Whether the scrim backdrop is shown |
 | `isDraggingEnabled` | `true` | Whether the sheet can be dragged |
-| `allowGrabbingNonScrollViews` | `false` | Intercept drag from any content (not just scroll views) |
 | `dimmingColor` | `0x4D000000` | Scrim color (with alpha) |
 
 ```kotlin
