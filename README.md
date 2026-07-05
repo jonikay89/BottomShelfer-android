@@ -5,7 +5,7 @@ detents, a draggable grabber, optional dimming scrim, keyboard avoidance,
 rotation, scroll view coordination, and full layout configuration.
 
 <p align="center">
-  <a href="https://github.com/jonikay89/BottomShelfer-Android"><img src="https://img.shields.io/badge/github-jonikay89%2FBottomShelfer--Android-blue" /></a>
+  <a href="https://github.com/jonikay89/BottomShelfer-android"><img src="https://img.shields.io/badge/github-jonikay89%2FBottomShelfer--android-blue" /></a>
   <a href="https://kotlinlang.org"><img src="https://img.shields.io/badge/kotlin-1.9%2B-purple" /></a>
   <a href="https://developer.android.com"><img src="https://img.shields.io/badge/Android-API%2021%2B-lightgrey" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" /></a>
@@ -18,11 +18,37 @@ rotation, scroll view coordination, and full layout configuration.
 
 ## Installation
 
-Add the library module to your project or include as a dependency:
+### JitPack
+
+Add JitPack to your root `settings.gradle.kts`:
+
+```kotlin
+dependencyResolutionManagement {
+    repositories {
+        google()
+        mavenCentral()
+        maven { url = uri("https://jitpack.io") }
+    }
+}
+```
+
+Then add the dependency:
+
+```kotlin
+// app/build.gradle.kts
+dependencies {
+    implementation("com.github.jonikay89:BottomShelfer-android:1.0.0")
+}
+```
+
+### Local module
+
+Clone the repo and reference the module directly:
 
 ```kotlin
 // settings.gradle.kts
 include(":bottomshelfer")
+project(":bottomshelfer").projectDir = file("../BottomShelfer-android/bottomshelfer")
 ```
 
 ```kotlin
@@ -199,4 +225,4 @@ MIT — see [LICENSE](LICENSE).
 
 ---
 
-[github]: https://github.com/jonikay89/BottomShelfer-Android
+[github]: https://github.com/jonikay89/BottomShelfer-android

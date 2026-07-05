@@ -14,6 +14,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "BottomShelfer-Android"
+rootProject.name = "BottomShelfer-android"
 include(":bottomshelfer")
 include(":sample")
