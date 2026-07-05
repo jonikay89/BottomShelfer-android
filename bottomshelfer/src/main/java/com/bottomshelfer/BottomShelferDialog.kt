@@ -93,9 +93,9 @@ class BottomShelferDialog(
 
         // Set ViewTree owners on the container. We fall back to 'this' (ComponentDialog)
         // to ensure children can always find a valid owner.
-        container.setViewTreeLifecycleOwner(hostLifecycle ?: this as LifecycleOwner)
-        container.setViewTreeViewModelStoreOwner(hostViewModelStore ?: this as ViewModelStoreOwner)
-        container.setViewTreeSavedStateRegistryOwner(hostSavedState ?: this as SavedStateRegistryOwner)
+        container.setViewTreeLifecycleOwner(hostLifecycle ?: this as? LifecycleOwner)
+        container.setViewTreeViewModelStoreOwner(hostViewModelStore ?: this as? ViewModelStoreOwner)
+        container.setViewTreeSavedStateRegistryOwner(hostSavedState ?: this as? SavedStateRegistryOwner)
 
         setContentView(container)
     }

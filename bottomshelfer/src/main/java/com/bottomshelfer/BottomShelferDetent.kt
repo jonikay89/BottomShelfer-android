@@ -37,11 +37,11 @@ data class BottomShelferDetent(val height: Int) {
             val screenHeight = getScreenHeight(context)
             val maxHeight = (screenHeight * maxHeightFraction).toInt()
             val clampedContentHeight = maxOf(200, minOf(contentHeight, maxHeight))
-            return listOf(
-                BottomShelferDetent((clampedContentHeight * 0.4f).toInt()),
-                BottomShelferDetent(clampedContentHeight),
-                BottomShelferDetent((clampedContentHeight * 1.5f).toInt()),
-            )
+        return listOf(
+            BottomShelferDetent((clampedContentHeight * 0.4f).toInt()),
+            BottomShelferDetent(clampedContentHeight),
+            BottomShelferDetent(minOf((clampedContentHeight * 1.5f).toInt(), maxHeight)),
+        )
         }
 
         private fun getScreenHeight(context: Context): Int {
