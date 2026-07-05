@@ -4,6 +4,9 @@ plugins {
     id("maven-publish")
 }
 
+group = "com.github.jonikay89"
+version = "1.0.0"
+
 afterEvaluate {
     publishing {
         publications {
@@ -11,6 +14,7 @@ afterEvaluate {
                 from(components["release"])
                 groupId = "com.github.jonikay89"
                 artifactId = "BottomShelfer-android"
+                version = project.version.toString()
             }
         }
     }
