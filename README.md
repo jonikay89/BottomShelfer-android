@@ -50,6 +50,7 @@ Predefined or custom-height snap points:
 sheet.setDetents(listOf(BottomShelferDetent.medium(context), BottomShelferDetent.large(context)))
 sheet.setDetents(listOf(BottomShelferDetent.custom(320)))
 sheet.setDetents(BottomShelferDetent.detentsForContentHeight(420, context))
+sheet.setDetents(BottomShelferDetent.detentsForContentHeight(420, context, maxHeightFraction = 0.6f))
 sheet.setSelectedDetentIndex(1)
 ```
 
@@ -58,7 +59,8 @@ Factory methods on `BottomShelferDetent`:
 - `medium(context)` — 50% of screen height
 - `large(context)` — 90% of screen height
 - `custom(height)` — explicit pixel height
-- `detentsForContentHeight(height, context)` — auto-generates small/medium/large
+- `detentsForContentHeight(height, context, maxHeightFraction = 0.9f)` — auto-generates three detents scaled relative to content height:
+  - small at 40%, medium at 100%, large at 150% of content height
 
 ### Grabber pill
 
@@ -77,13 +79,19 @@ The pill animates on drag — scales to 1.3x, fades to 0.6 alpha. Set its size t
 
 ### Dimming scrim
 
-Optional semi-transparent backdrop. Tap behavior controlled by `dismissOnHide`:
+Optional semi-transparent backdrop:
 
 ```kotlin
 sheet.config = sheet.config.copy(isDimmingEnabled = false)
-sheet.config = sheet.config.copy(
-    dimmingColor = 0x66000000.toInt()
-)
+sheet.config = sheet.config.copy(dimmingColor = 0x66000000.toInt())
+```
+
+Dismiss on scrim tap is controlled via the dialog:
+
+```kotlin
+val dialog = BottomShelferDialog(context, sheet)
+dialog.dismissOnHide = true  // dismiss when scrim tapped
+dialog.show()
 ```
 
 ### Drag & scroll coordination
@@ -102,6 +110,13 @@ Disable dragging entirely with `isDraggingEnabled = false`.
 
 The sheet's dialog window uses `SOFT_INPUT_ADJUST_RESIZE` so it naturally
 adjusts when the keyboard appears.
+
+Set `autoFocus = true` to automatically focus the first `EditText` and show the
+keyboard when the sheet opens:
+
+```kotlin
+sheet.autoFocus = true
+```
 
 ### Callbacks
 
@@ -138,10 +153,15 @@ Override defaults through `BottomShelferLayoutConfig`:
 | `maxSheetWidthDp` | 430 | Clamps sheet width on tablets |
 | `maxHeightFraction` | 0.9 | Caps sheet height as fraction of container |
 | `grabberHitAreaHeightDp` | 44 | Height of the draggable band |
-| `grabberPillWidthDp` / `grabberPillHeightDp` | 36 / 5 | Pill dimensions |
+| `grabberPillWidthDp` / `grabberPillHeightDp` | 60 / 8 | Pill dimensions |
+| `grabberPillColor` | `0x99000000` | Pill color (with alpha) |
 | `grabberPillBottomOffsetDp` | 12 | Distance from sheet edge to pill |
 | `grabberPillCornerRadiusDp` | 2.5 | Pill corner radius |
-| `cornerRadiusDp` | 20 | Sheet top corner radius |
+| `cornerRadiusDp` | 28 | Sheet top corner radius |
+| `isDimmingEnabled` | `true` | Whether the scrim backdrop is shown |
+| `isDraggingEnabled` | `true` | Whether the sheet can be dragged |
+| `allowGrabbingNonScrollViews` | `false` | Intercept drag from any content (not just scroll views) |
+| `dimmingColor` | `0x4D000000` | Scrim color (with alpha) |
 
 ```kotlin
 sheet.config = BottomShelferLayoutConfig(
