@@ -626,8 +626,7 @@ class BottomShelferSheet @JvmOverloads constructor(
     private fun finalizeSnap(height: Int) {
         isUserDragging = false
         val idx = minOf(selectedDetentIndex, maxOf(detents.size - 1, 0))
-        val h = if (detents.isEmpty()) (containerHeight * config.maxHeightFraction).toInt() else detents[idx].height
-        callback?.onDetentChanged(idx, h)
+        callback?.onDetentChanged(idx, height)
         requestLayout()
     }
 
