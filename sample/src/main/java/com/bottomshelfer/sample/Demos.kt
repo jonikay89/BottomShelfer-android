@@ -223,6 +223,7 @@ object Demos {
         sheet.addContentView(content)
 
         val dialog = BottomShelferDialog(activity, sheet)
+        dialog.dismissOnHide = true
         dialog.show()
     }
 

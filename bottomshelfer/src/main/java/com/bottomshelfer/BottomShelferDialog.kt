@@ -118,6 +118,9 @@ class BottomShelferDialog(
     }
 
     override fun dismiss() {
+        val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as? android.view.inputmethod.InputMethodManager
+        currentFocus?.let { imm?.hideSoftInputFromWindow(it.windowToken, 0) }
+        currentFocus?.clearFocus()
         sheet.hide(animate = true)
         fadeDimmingOut {
             super.dismiss()
@@ -125,6 +128,9 @@ class BottomShelferDialog(
     }
 
     fun dismissImmediately() {
+        val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as? android.view.inputmethod.InputMethodManager
+        currentFocus?.let { imm?.hideSoftInputFromWindow(it.windowToken, 0) }
+        currentFocus?.clearFocus()
         sheet.hide(animate = false)
         dimmingView.alpha = 0f
         try {
