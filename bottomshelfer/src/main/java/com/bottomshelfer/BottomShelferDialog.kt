@@ -3,7 +3,7 @@ package com.bottomshelfer
 import android.content.Context
 import android.content.ContextWrapper
 import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
+import android.os.Build
 import android.os.Bundle
 import android.view.Gravity
 import android.view.View
@@ -11,6 +11,8 @@ import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.FrameLayout
 import androidx.activity.ComponentDialog
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.setViewTreeLifecycleOwner
@@ -41,8 +43,12 @@ class BottomShelferDialog(
             setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
             setGravity(Gravity.CENTER)
             setBackgroundDrawableResource(android.R.color.transparent)
-            @Suppress("DEPRECATION")
-            setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                setDecorFitsSystemWindows(false)
+            } else {
+                @Suppress("DEPRECATION")
+                setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_UNSPECIFIED)
+            }
             setFormat(android.graphics.PixelFormat.TRANSLUCENT)
         }
 
@@ -60,6 +66,16 @@ class BottomShelferDialog(
             gravity = Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL
         }
         container.addView(sheet, sheetLp)
+
+        window?.decorView?.apply {
+            ViewCompat.setOnApplyWindowInsetsListener(this) { _, insets ->
+                val imeBottom = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom
+                isKeyboardVisible = imeBottom > 0
+                sheet.setKeyboardOffset(imeBottom)
+                insets
+            }
+            ViewCompat.requestApplyInsets(this)
+        }
 
         if (sheet.config.isDimmingEnabled) {
             dimmingView.setOnClickListener {

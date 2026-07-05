@@ -13,6 +13,7 @@ import android.view.VelocityTracker
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.DecelerateInterpolator
+import android.view.inputmethod.InputMethodManager
 import android.widget.FrameLayout
 import androidx.core.view.NestedScrollingParent3
 import androidx.core.view.ViewCompat
@@ -27,6 +28,8 @@ class BottomShelferSheet @JvmOverloads constructor(
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0
 ) : FrameLayout(context, attrs, defStyleAttr), NestedScrollingParent3 {
+
+    var autoFocus: Boolean = false
 
     var config: BottomShelferLayoutConfig = BottomShelferLayoutConfig.DEFAULT
         set(value) {
@@ -172,8 +175,7 @@ class BottomShelferSheet @JvmOverloads constructor(
 
         val widthSpec = MeasureSpec.makeMeasureSpec(sheetWidth, MeasureSpec.EXACTLY)
         val heightSpec = MeasureSpec.makeMeasureSpec(maxSheetHeight, MeasureSpec.EXACTLY)
-        val grabberAreaH = dpToPx(config.grabberHitAreaHeightDp.toFloat()).toInt()
-        val visibleSheetH = ((maxSheetHeight - translationY).coerceAtLeast(0f)).toInt()
+        val visibleSheetH = ((maxSheetHeight - translationY).coerceIn(0f, maxSheetHeight.toFloat())).toInt()
         val contentHeightSpec = MeasureSpec.makeMeasureSpec(visibleSheetH, MeasureSpec.EXACTLY)
 
         for (i in 0 until childCount) {
@@ -197,7 +199,7 @@ class BottomShelferSheet @JvmOverloads constructor(
             pill.layout(pillX, maxOf(pillY, 0), pillX + pillW, pillY + pillH)
         }
 
-        val visibleSheetH = ((maxSheetHeight - translationY).coerceAtLeast(0f)).toInt()
+        val visibleSheetH = ((maxSheetHeight - translationY).coerceIn(0f, maxSheetHeight.toFloat())).toInt()
         contentLayout.layout(0, 0, right - left, visibleSheetH)
     }
 
@@ -217,7 +219,7 @@ class BottomShelferSheet @JvmOverloads constructor(
         val maxH = (containerHeight * config.maxHeightFraction).toInt()
         val clamped = minOf(targetHeight, maxH)
         selectedDetentIndex = detentIndexForHeight(clamped)
-        val targetOffset = (maxSheetHeight - clamped).toFloat()
+        val targetOffset = (maxSheetHeight - clamped - keyboardOffsetY).toFloat()
         animateToTranslationY(targetOffset)
     }
 
@@ -241,6 +243,28 @@ class BottomShelferSheet @JvmOverloads constructor(
             snapToCurrentDetent(animate = false)
         } else {
             visibility = View.VISIBLE
+        }
+        if (autoFocus && _isVisible) {
+            postDelayed({
+                focusFirstEditText(contentLayout)
+            }, 300)
+        }
+    }
+
+    private fun focusFirstEditText(parent: ViewGroup) {
+        for (i in 0 until parent.childCount) {
+            val child = parent.getChildAt(i)
+            if (child is android.widget.EditText) {
+                child.requestFocus()
+                child.post {
+                    val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+                    imm?.showSoftInput(child, InputMethodManager.SHOW_FORCED)
+                }
+                return
+            }
+            if (child is ViewGroup) {
+                focusFirstEditText(child)
+            }
         }
     }
 
@@ -335,7 +359,7 @@ class BottomShelferSheet @JvmOverloads constructor(
 
     private fun snapToNearestDetent() {
         if (snapYPositions.isEmpty()) return
-        val currentOffset = translationY
+        val currentOffset = translationY + keyboardOffsetY
         var bestIndex = 0
         var bestDist = Float.MAX_VALUE
         for (i in snapYPositions.indices) {
@@ -346,7 +370,7 @@ class BottomShelferSheet @JvmOverloads constructor(
             }
         }
         selectedDetentIndex = bestIndex
-        val target = snapYPositions[bestIndex]
+        val target = snapYPositions[bestIndex] - keyboardOffsetY
         animateToTranslationY(target)
     }
 
@@ -412,7 +436,7 @@ class BottomShelferSheet @JvmOverloads constructor(
             MotionEvent.ACTION_MOVE -> {
                 val dy = event.rawY - touchDownY
                 var newTranslationY = (dragStartTranslationY + dy)
-                newTranslationY = newTranslationY.coerceIn(0f, maxSheetHeight.toFloat())
+                newTranslationY = newTranslationY.coerceIn(-keyboardOffsetY.toFloat(), maxSheetHeight.toFloat())
                 translationY = newTranslationY
                 return true
             }
@@ -447,7 +471,7 @@ class BottomShelferSheet @JvmOverloads constructor(
         super.onConfigurationChanged(newConfig)
         containerHeight = context.resources.displayMetrics.heightPixels
         maxSheetHeight = (containerHeight * config.maxHeightFraction).toInt()
-        translationY = translationY.coerceIn(0f, maxSheetHeight.toFloat())
+        translationY = translationY.coerceIn(-keyboardOffsetY.toFloat(), maxSheetHeight.toFloat())
         rebuildSnapPoints()
         if (!isUserDragging && _isVisible) {
             snapToCurrentDetent(animate = false)
@@ -497,14 +521,14 @@ class BottomShelferSheet @JvmOverloads constructor(
 
         val currentTranslationY = translationY
         val dismissThresholdPercent = 0.85f
-        val currentProgress = if (maxSheetHeight > 0) currentTranslationY / maxSheetHeight else 0f
+        val currentProgress = if (maxSheetHeight > 0) (currentTranslationY + keyboardOffsetY) / maxSheetHeight else 0f
 
         if (currentProgress >= dismissThresholdPercent) {
             parentDialog?.dismissImmediately()
             return
         }
 
-        val currentSnapIndex = snapIndexClosest(toTranslationY = currentTranslationY)
+        val currentSnapIndex = snapIndexClosest(toTranslationY = currentTranslationY + keyboardOffsetY)
         val isDraggingDown = velocityY > 0
         val velocityInPercent = if (maxSheetHeight > 0) abs(velocityY) / maxSheetHeight else 0f
         val isFastSwipe = velocityInPercent > 1.5f
@@ -530,7 +554,7 @@ class BottomShelferSheet @JvmOverloads constructor(
     private fun snapToIndex(index: Int, velocity: Float = 0f) {
         if (snapYPositions.isEmpty()) return
         val idx = index.coerceIn(0, snapYPositions.lastIndex)
-        val targetTranslationY = snapYPositions[idx]
+        val targetTranslationY = snapYPositions[idx] - keyboardOffsetY
         val targetHeight = snapHeights[idx]
         selectedDetentIndex = detentIndexForHeight(targetHeight.toInt())
 
@@ -553,7 +577,7 @@ class BottomShelferSheet @JvmOverloads constructor(
         }
         selectedDetentIndex = minOf(selectedDetentIndex, maxOf(snapHeights.size - 1, 0))
         val targetHeight = snapHeights[selectedDetentIndex]
-        val targetTranslationY = maxSheetHeight - targetHeight
+        val targetTranslationY = maxSheetHeight - targetHeight - keyboardOffsetY
 
         if (animate) {
             val anim = ValueAnimator.ofFloat(translationY, targetTranslationY)
@@ -639,7 +663,11 @@ class BottomShelferSheet @JvmOverloads constructor(
     }
 
     fun setKeyboardOffset(offset: Int) {
-        keyboardOffsetY = offset.coerceAtMost(maxSheetHeight)
+        val newOffset = offset.coerceAtMost(maxSheetHeight)
+        val keyboardDelta = newOffset - keyboardOffsetY
+        keyboardOffsetY = newOffset
+        translationY = (translationY - keyboardDelta).coerceIn(-keyboardOffsetY.toFloat(), maxSheetHeight.toFloat())
+        requestLayout()
     }
 
     private fun dpToPx(dp: Float): Float {

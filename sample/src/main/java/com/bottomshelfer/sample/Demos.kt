@@ -200,7 +200,8 @@ object Demos {
 
     private fun presentKeyboardSheet(activity: MainActivity) {
         val sheet = BottomShelferSheet(activity)
-        sheet.setDetents(listOf(BottomShelferDetent.small(activity), BottomShelferDetent.medium(activity)))
+        sheet.autoFocus = true
+        sheet.setDetents(listOf(BottomShelferDetent.small(activity)))
         sheet.setSelectedDetentIndex(0)
 
         val content = makeVerticalLayout(activity).apply {
@@ -208,6 +209,9 @@ object Demos {
             addView(EditText(activity).apply {
                 hint = "Type something..."
                 inputType = InputType.TYPE_CLASS_TEXT
+                setBackgroundColor(Color.GRAY)
+                setTextColor(Color.WHITE)
+                setHintTextColor(Color.LTGRAY)
                 layoutParams = LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
                 )
