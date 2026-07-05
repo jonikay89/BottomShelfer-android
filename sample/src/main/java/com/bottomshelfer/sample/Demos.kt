@@ -201,7 +201,7 @@ object Demos {
     private fun presentKeyboardSheet(activity: MainActivity) {
         val sheet = BottomShelferSheet(activity)
         sheet.autoFocus = true
-        sheet.setDetents(listOf(BottomShelferDetent.small(activity)))
+        sheet.setDetents(listOf(BottomShelferDetent.custom(500)))
         sheet.setSelectedDetentIndex(0)
 
         val content = makeVerticalLayout(activity).apply {
